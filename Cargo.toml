@@ -1,0 +1,37 @@
+[package]
+name = "notifd"
+version = "0.1.0"
+edition = "2021"
+description = "Notification daemon (org.freedesktop.Notifications) with a UI-over-socket backend split"
+authors = ["Gofroshka"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/gofroshka/notifd"
+homepage = "https://github.com/gofroshka/notifd"
+keywords = ["notifications", "dbus", "freedesktop", "wayland", "quickshell"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+zbus = { version = "5", default-features = false, features = ["tokio"] }
+zvariant = "5"
+tokio = { version = "1", features = [
+  "rt-multi-thread",
+  "macros",
+  "net",
+  "sync",
+  "signal",
+  "io-util",
+  "process",
+  "time",
+] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+log = "0.4"
+env_logger = "0.11"
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+[profile.release]
+opt-level = 2
+lto = true
+strip = true
