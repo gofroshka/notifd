@@ -63,6 +63,10 @@ Or with Nix:
 nix build
 ```
 
+For development, the repo ships a flake dev shell wired up for
+[direnv](https://direnv.net/). After `direnv allow` the shell (cargo,
+rust-analyzer, libcanberra, pulseaudio) loads automatically.
+
 ## Running
 
 ```sh
