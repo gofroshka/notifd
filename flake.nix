@@ -23,6 +23,8 @@
           packages = with pkgsFor system; [
             cargo
             rustc
+            clippy
+            rustfmt
             pkg-config
             rust-analyzer
             nixd
