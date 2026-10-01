@@ -21,16 +21,10 @@ pub struct Notifications {
 impl Notifications {
     #[zbus(name = "GetCapabilities")]
     async fn get_capabilities(&self) -> Vec<String> {
-        [
-            "actions",
-            "body",
-            "icon-static",
-            "persistence",
-            "sound",
-        ]
-        .iter()
-        .map(|cap| cap.to_string())
-        .collect()
+        ["actions", "body", "icon-static", "persistence", "sound"]
+            .iter()
+            .map(|cap| cap.to_string())
+            .collect()
     }
 
     #[zbus(name = "GetServerInformation")]

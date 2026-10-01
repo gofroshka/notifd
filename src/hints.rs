@@ -42,8 +42,12 @@ impl ParsedHints {
             image_data: hint_value(hints, "image-data")
                 .or_else(|| hint_value(hints, "image_data"))
                 .and_then(image_data_of),
-            resident: hint_value(hints, "resident").and_then(bool_of).unwrap_or(false),
-            transient: hint_value(hints, "transient").and_then(bool_of).unwrap_or(false),
+            resident: hint_value(hints, "resident")
+                .and_then(bool_of)
+                .unwrap_or(false),
+            transient: hint_value(hints, "transient")
+                .and_then(bool_of)
+                .unwrap_or(false),
             sound: SoundHint::default(),
         };
 
@@ -64,10 +68,7 @@ impl ParsedHints {
     }
 }
 
-fn hint_value<'a>(
-    hints: &'a HashMap<String, OwnedValue>,
-    key: &str,
-) -> Option<&'a Value<'static>> {
+fn hint_value<'a>(hints: &'a HashMap<String, OwnedValue>, key: &str) -> Option<&'a Value<'static>> {
     hints.get(key).map(|value| &**value)
 }
 

@@ -24,7 +24,13 @@ async fn emit(connection: &Connection, event: Event) {
     match event {
         Event::Removed { id, reason } => {
             let _ = connection
-                .emit_signal(None::<&str>, PATH, INTERFACE, "NotificationClosed", &(id, reason))
+                .emit_signal(
+                    None::<&str>,
+                    PATH,
+                    INTERFACE,
+                    "NotificationClosed",
+                    &(id, reason),
+                )
                 .await;
         }
         Event::ActionInvoked { id, key } => {

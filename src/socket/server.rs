@@ -44,7 +44,11 @@ async fn handle(stream: UnixStream, state: Arc<State>) -> Result<()> {
     let mut events = state.subscribe();
 
     let (dnd, notifications) = state.snapshot();
-    write_event(&mut write_half, &ServerEvent::Snapshot { dnd, notifications }).await?;
+    write_event(
+        &mut write_half,
+        &ServerEvent::Snapshot { dnd, notifications },
+    )
+    .await?;
 
     let mut lines = BufReader::new(read_half).lines();
     loop {

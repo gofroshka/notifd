@@ -16,9 +16,18 @@ pub enum Event {
     InhibitedChanged(bool),
     Added(Notification),
     Updated(Notification),
-    Removed { id: u32, reason: u32 },
-    ActionInvoked { id: u32, key: String },
-    Replied { id: u32, text: String },
+    Removed {
+        id: u32,
+        reason: u32,
+    },
+    ActionInvoked {
+        id: u32,
+        key: String,
+    },
+    Replied {
+        id: u32,
+        text: String,
+    },
 }
 
 struct Inner {

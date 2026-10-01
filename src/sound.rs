@@ -94,7 +94,11 @@ fn resolve_theme_sound(name: &str) -> Option<PathBuf> {
     }
     let data_dirs = std::env::var("XDG_DATA_DIRS")
         .unwrap_or_else(|_| "/usr/local/share:/usr/share".to_string());
-    roots.extend(data_dirs.split(':').map(|dir| PathBuf::from(dir).join("sounds")));
+    roots.extend(
+        data_dirs
+            .split(':')
+            .map(|dir| PathBuf::from(dir).join("sounds")),
+    );
     if let Some(home) = std::env::var_os("HOME") {
         roots.push(PathBuf::from(home).join(".local/share/sounds"));
     }

@@ -34,7 +34,9 @@ impl ServerEvent {
             Event::Added(notification) => Some(Self::Added { notification }),
             Event::Updated(notification) => Some(Self::Updated { notification }),
             Event::Removed { id, reason } => Some(Self::Removed { id, reason }),
-            Event::InhibitedChanged(_) | Event::ActionInvoked { .. } | Event::Replied { .. } => None,
+            Event::InhibitedChanged(_) | Event::ActionInvoked { .. } | Event::Replied { .. } => {
+                None
+            }
         }
     }
 }

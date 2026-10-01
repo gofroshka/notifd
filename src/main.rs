@@ -19,7 +19,10 @@ async fn main() -> Result<()> {
     let initial_dnd = std::fs::read_to_string(&config.dnd_file)
         .map(|value| value.trim() == "1")
         .unwrap_or(false);
-    let state = Arc::new(state::State::new(initial_dnd, Some(config.dnd_file.clone())));
+    let state = Arc::new(state::State::new(
+        initial_dnd,
+        Some(config.dnd_file.clone()),
+    ));
 
     // Claiming `org.freedesktop.Notifications` also reports readiness to
     // systemd (the unit is `Type=dbus`).
