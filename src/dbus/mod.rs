@@ -1,5 +1,6 @@
 mod interface;
 mod signals;
+mod ui;
 
 use std::sync::Arc;
 
@@ -11,6 +12,8 @@ use crate::state::State;
 
 pub const PATH: &str = "/org/freedesktop/Notifications";
 pub const INTERFACE: &str = "org.freedesktop.Notifications";
+pub const UI_PATH: &str = "/org/gofroshka/Notifd";
+pub const UI_INTERFACE: &str = "org.gofroshka.Notifd1";
 
 /// Register the D-Bus service, claim the well-known name and start forwarding
 /// domain events to D-Bus signals. Claiming the name also signals readiness to
@@ -23,6 +26,12 @@ pub async fn serve(state: Arc<State>, config: Config) -> Result<Connection> {
             interface::Notifications {
                 state: state.clone(),
                 config,
+            },
+        )?
+        .serve_at(
+            UI_PATH,
+            ui::Ui {
+                state: state.clone(),
             },
         )?
         .build()

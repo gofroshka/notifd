@@ -3,11 +3,11 @@
 A small notification daemon for Linux desktops, written in Rust. It owns the
 D-Bus name `org.freedesktop.Notifications`, implements the Desktop Notifications
 Specification (plus sound, a real DND `Inhibited` property and persistence), and
-mirrors its state to a separate UI process over a Unix socket.
+exposes a typed D-Bus interface for a separate UI process.
 
 It is designed to pair with a UI-only shell (this one is used with
-[Quickshell](https://quickshell.org/)), but the socket protocol is plain
-JSON-lines, so any frontend can consume it.
+[Quickshell](https://quickshell.org/)). Any D-Bus client can consume the UI
+interface; the standard notification API remains unchanged.
 
 ## Why split the daemon from the UI?
 
@@ -35,19 +35,18 @@ presentation gives you:
 - `image-data` / `image-path` decoding into cached PNGs.
 - `replaces_id`, `expire_timeout` and persistence (`resident`) handling.
 - DND state persisted across restarts.
-- A JSON-lines Unix socket for the UI: an initial snapshot, incremental events,
-  and user commands back.
+- `org.gofroshka.Notifd1`: typed snapshot, change signal and UI actions on the
+  same session bus as the notification API.
 - Ready for systemd (`Type=dbus`).
 
 ## Architecture
 
 ```
-app ──D-Bus org.freedesktop.Notifications──► notifd ──Unix socket (JSON lines)──► UI (Quickshell)
+app ──D-Bus org.freedesktop.Notifications──► notifd ◄──D-Bus org.gofroshka.Notifd1──► UI (Quickshell)
 ```
 
-The daemon is the only owner of the D-Bus name. The UI never talks to the bus;
-it mirrors daemon state and forwards user actions (dismiss, invoke, reply, clear,
-toggle DND).
+The daemon owns the standard name `org.freedesktop.Notifications`; the UI
+queries its private interface and subscribes to changes over D-Bus.
 
 ## Building
 
@@ -80,34 +79,34 @@ declarative:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `NOTIFD_SOCKET` | `$XDG_RUNTIME_DIR/notifd.sock` | Unix socket for the UI |
 | `NOTIFD_STANDARD_SOUND` | `message-new-instant` | Default sound (XDG sound name or absolute file path). Empty string disables the fallback. |
 
 DND state is stored in `$XDG_STATE_HOME/notifd/dnd` and restored on start.
 
-## UI socket protocol
+## UI D-Bus interface
 
-Each connection receives a snapshot, then a stream of events (one JSON object
-per line). The UI sends commands back on the same socket.
+Service `org.freedesktop.Notifications`, object `/org/gofroshka/Notifd`,
+interface `org.gofroshka.Notifd1`:
 
-Server → UI:
+- `GetSnapshot() → (b, a(ussssssbba(ss)))`: the DND flag and notifications.
+  Each notification contains id, app name, app icon, summary, body, urgency
+  (`low`/`normal`/`critical`), image path (empty if absent), inline-reply flag,
+  resident flag and `(action id, label)` pairs. Fetch this on startup and after
+  change signals; the snapshot is atomic and also recovers missed events.
+- `Changed(kind: s, id: u)`: emitted after a state change. `kind` is `added`,
+  `updated`, `removed` or `dnd`; `id` is 0 for DND changes. Clients should
+  refetch the snapshot rather than relying on event payloads.
+- `SetDnd(b)`, `Dismiss(u)`, `Invoke(u, s)`, `Reply(u, s)`, `Clear()`:
+  actions from the UI. Dismiss/clear keep their
+  user-dismissed `NotificationClosed` reason on the standard interface.
 
-```json
-{"type":"snapshot","dnd":false,"notifications":[...]}
-{"type":"added","notification":{...}}
-{"type":"updated","notification":{...}}
-{"type":"removed","id":1,"reason":2}
-{"type":"dnd","value":true}
-```
+For example:
 
-UI → server:
-
-```json
-{"type":"dismiss","id":1}
-{"type":"invoke","id":1,"key":"default"}
-{"type":"reply","id":1,"text":"hello"}
-{"type":"clear"}
-{"type":"set_dnd","value":true}
+```sh
+busctl --user call org.freedesktop.Notifications /org/gofroshka/Notifd \
+  org.gofroshka.Notifd1 GetSnapshot
+busctl --user call org.freedesktop.Notifications /org/gofroshka/Notifd \
+  org.gofroshka.Notifd1 SetDnd b true
 ```
 
 ## systemd

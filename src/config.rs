@@ -4,7 +4,6 @@ use std::path::PathBuf;
 /// systemd unit stays declarative.
 #[derive(Clone, Debug)]
 pub struct Config {
-    pub socket_path: PathBuf,
     pub cache_dir: PathBuf,
     /// Where the user's DND toggle is persisted across restarts.
     pub dnd_file: PathBuf,
@@ -15,9 +14,6 @@ pub struct Config {
 
 impl Config {
     pub fn from_env() -> Self {
-        let runtime_dir = std::env::var_os("XDG_RUNTIME_DIR")
-            .map(PathBuf::from)
-            .unwrap_or_else(|| PathBuf::from("/tmp"));
         let cache_root = std::env::var_os("XDG_CACHE_HOME")
             .map(PathBuf::from)
             .or_else(|| std::env::var_os("HOME").map(|home| PathBuf::from(home).join(".cache")))
@@ -30,9 +26,6 @@ impl Config {
             .unwrap_or_else(|| PathBuf::from("/tmp"));
 
         Self {
-            socket_path: std::env::var_os("NOTIFD_SOCKET")
-                .map(PathBuf::from)
-                .unwrap_or_else(|| runtime_dir.join("notifd.sock")),
             cache_dir: cache_root.join("notifd"),
             dnd_file: state_root.join("notifd/dnd"),
             standard_sound: parse_standard_sound(),

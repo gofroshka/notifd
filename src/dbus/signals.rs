@@ -4,7 +4,7 @@ use tokio::sync::broadcast;
 use zbus::Connection;
 use zvariant::Value;
 
-use super::{INTERFACE, PATH};
+use super::{INTERFACE, PATH, UI_INTERFACE, UI_PATH};
 use crate::state::Event;
 
 /// Translate domain events into D-Bus signals on a dedicated task.
@@ -21,6 +21,13 @@ pub fn spawn(connection: Connection, mut events: broadcast::Receiver<Event>) {
 }
 
 async fn emit(connection: &Connection, event: Event) {
+    let change = match &event {
+        Event::Added(n) => Some(("added", n.id)),
+        Event::Updated(n) => Some(("updated", n.id)),
+        Event::Removed { id, .. } => Some(("removed", *id)),
+        Event::Dnd => Some(("dnd", 0)),
+        _ => None,
+    };
     match event {
         Event::Removed { id, reason } => {
             let _ = connection
@@ -56,7 +63,15 @@ async fn emit(connection: &Connection, event: Event) {
                 .await;
         }
         Event::InhibitedChanged(value) => emit_properties_changed(connection, value).await,
-        Event::Dnd(_) | Event::Added(_) | Event::Updated(_) => {}
+        Event::Dnd | Event::Added(_) | Event::Updated(_) => {}
+    }
+    if let Some((kind, id)) = change {
+        if let Err(error) = connection
+            .emit_signal(None::<&str>, UI_PATH, UI_INTERFACE, "Changed", &(kind, id))
+            .await
+        {
+            log::warn!("could not emit UI change signal: {error}");
+        }
     }
 }
 

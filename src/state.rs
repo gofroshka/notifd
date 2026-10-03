@@ -6,12 +6,11 @@ use tokio::sync::broadcast;
 
 use crate::model::{CloseReason, Notification};
 
-/// Domain events emitted by the state. They feed both the D-Bus signal
-/// emitter and the UI socket broadcaster.
+/// Domain events emitted by the state and forwarded to D-Bus subscribers.
 #[derive(Clone, Debug)]
 pub enum Event {
     /// The user-facing "Do Not Disturb" toggle changed.
-    Dnd(bool),
+    Dnd,
     /// The aggregate `Inhibited` value changed (user DND or an app inhibitor).
     InhibitedChanged(bool),
     Added(Notification),
@@ -85,7 +84,7 @@ impl State {
             inner.dnd || !inner.inhibitors.is_empty()
         };
         self.persist_dnd(value);
-        self.publish(Event::Dnd(value));
+        self.publish(Event::Dnd);
         self.publish(Event::InhibitedChanged(inhibited));
     }
 

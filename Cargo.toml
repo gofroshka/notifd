@@ -2,7 +2,7 @@
 name = "notifd"
 version = "0.1.0"
 edition = "2021"
-description = "Notification daemon (org.freedesktop.Notifications) with a UI-over-socket backend split"
+description = "Notification daemon (org.freedesktop.Notifications) with a D-Bus UI interface"
 authors = ["Gofroshka"]
 license = "MIT"
 readme = "README.md"
@@ -25,7 +25,6 @@ tokio = { version = "1", features = [
   "time",
 ] }
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
 anyhow = "1"
 log = "0.4"
 env_logger = "0.11"

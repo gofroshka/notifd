@@ -3,7 +3,6 @@ mod dbus;
 mod hints;
 mod image_cache;
 mod model;
-mod socket;
 mod sound;
 mod state;
 
@@ -27,8 +26,6 @@ async fn main() -> Result<()> {
     // Claiming `org.freedesktop.Notifications` also reports readiness to
     // systemd (the unit is `Type=dbus`).
     let _connection = dbus::serve(state.clone(), config.clone()).await?;
-    socket::spawn(config.socket_path.clone(), state.clone()).await?;
-
     log::info!("notifd ready");
     tokio::signal::ctrl_c().await?;
     Ok(())
